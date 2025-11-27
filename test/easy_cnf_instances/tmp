@@ -1,0 +1,1420 @@
+input: aim-50-2_0-no-4.cnf
+(between iterations) assumption literals = 3
+(between iterations) assumption literals = 5
+### time 0.008
+### rotation_clauses 19
+### rebuild-time 0
+### muc-size 21
+### lpf_literals 8
+### UNSAT_by_pf 0
+### iter 2
+### true_assump_ratio 0.375000
+### nettime 0.002
+### longestcall 0
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 109
+### conflicts 16
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-100-1_6-no-1.cnf
+(between iterations) assumption literals = 6
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 6
+(between iterations) assumption literals = 5
+### time 0.013
+### rotation_clauses 44
+### rebuild-time 0
+### muc-size 47
+### lpf_literals 22
+### UNSAT_by_pf 1
+### iter 4
+### true_assump_ratio 0.294118
+### nettime 0.006
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 427
+### conflicts 27
+### pf_time 0.001
+### pr_time 0
+s UNSATISFIABLE
+input: aim-100-1_6-no-2.cnf
+(between iterations) assumption literals = 3
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 3
+### time 0.014
+### rotation_clauses 51
+### rebuild-time 0
+### muc-size 53
+### lpf_literals 11
+### UNSAT_by_pf 0
+### iter 3
+### true_assump_ratio 0.181818
+### nettime 0.006
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 316
+### conflicts 33
+### pf_time 0.001
+### pr_time 0
+s UNSATISFIABLE
+input: aim-100-1_6-no-3.cnf
+(between iterations) assumption literals = 3
+(between iterations) assumption literals = 7
+(between iterations) assumption literals = 7
+(between iterations) assumption literals = 6
+### time 0.015
+### rotation_clauses 53
+### rebuild-time 0
+### muc-size 57
+### lpf_literals 23
+### UNSAT_by_pf 0
+### iter 4
+### true_assump_ratio 0.434783
+### nettime 0.008
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 533
+### conflicts 32
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-100-1_6-no-4.cnf
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 8
+### time 0.013
+### rotation_clauses 45
+### rebuild-time 0
+### muc-size 48
+### lpf_literals 16
+### UNSAT_by_pf 0
+### iter 3
+### true_assump_ratio 0.555556
+### nettime 0.005
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 362
+### conflicts 27
+### pf_time 0.001
+### pr_time 0
+s UNSATISFIABLE
+input: aim-100-2_0-no-1.cnf
+(between iterations) assumption literals = 3
+### time 0.012
+### rotation_clauses 18
+### rebuild-time 0
+### muc-size 19
+### lpf_literals 3
+### UNSAT_by_pf 0
+### iter 1
+### true_assump_ratio 0.000000
+### nettime 0.003
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 185
+### conflicts 26
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-100-2_0-no-2.cnf
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 6
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 3
+### time 0.014
+### rotation_clauses 34
+### rebuild-time 0
+### muc-size 39
+### lpf_literals 23
+### UNSAT_by_pf 0
+### iter 5
+### true_assump_ratio 0.461538
+### nettime 0.006
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 560
+### conflicts 24
+### pf_time 0.001
+### pr_time 0
+s UNSATISFIABLE
+input: aim-100-2_0-no-3.cnf
+(between iterations) assumption literals = 9
+(between iterations) assumption literals = 8
+### time 0.01
+### rotation_clauses 25
+### rebuild-time 0
+### muc-size 27
+### lpf_literals 17
+### UNSAT_by_pf 0
+### iter 2
+### true_assump_ratio 0.411765
+### nettime 0.003
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 233
+### conflicts 14
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-100-2_0-no-4.cnf
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 3
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 3
+### time 0.013
+### rotation_clauses 26
+### rebuild-time 0
+### muc-size 31
+### lpf_literals 21
+### UNSAT_by_pf 0
+### iter 5
+### true_assump_ratio 0.416667
+### nettime 0.006
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 513
+### conflicts 20
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-200-1_6-no-1.cnf
+(between iterations) assumption literals = 6
+(between iterations) assumption literals = 9
+### time 0.015
+### rotation_clauses 53
+### rebuild-time 0
+### muc-size 55
+### lpf_literals 15
+### UNSAT_by_pf 0
+### iter 2
+### true_assump_ratio 0.333333
+### nettime 0.005
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 600
+### conflicts 31
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-200-1_6-no-2.cnf
+(between iterations) assumption literals = 3
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 4
+### time 0.026
+### rotation_clauses 78
+### rebuild-time 0
+### muc-size 80
+### lpf_literals 12
+### UNSAT_by_pf 0
+### iter 3
+### true_assump_ratio 0.615385
+### nettime 0.01
+### longestcall 0.002
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 946
+### conflicts 67
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-200-1_6-no-3.cnf
+(between iterations) assumption literals = 3
+(between iterations) assumption literals = 7
+(between iterations) assumption literals = 8
+(between iterations) assumption literals = 6
+(between iterations) assumption literals = 9
+(between iterations) assumption literals = 9
+rebuilding proof...
+(between iterations) assumption literals = 7
+### time 0.037
+### rotation_clauses 76
+### rebuild-time 0.006
+### muc-size 82
+### lpf_literals 49
+### UNSAT_by_pf 1
+### iter 7
+### true_assump_ratio 0.557377
+### nettime 0.022
+### longestcall 0.007
+Testing...final
+did not pass test.input: aim-200-1_6-no-4.cnf
+(between iterations) assumption literals = 3
+(between iterations) assumption literals = 10
+rebuilding proof...
+(between iterations) assumption literals = 5
+### time 0.02
+### rotation_clauses 44
+### rebuild-time 0.003
+### muc-size 46
+### lpf_literals 18
+### UNSAT_by_pf 1
+### iter 3
+### true_assump_ratio 0.416667
+### nettime 0.01
+### longestcall 0.004
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 640
+### conflicts 27
+### pf_time 0
+### pr_time 0.003
+s UNSATISFIABLE
+input: aim-200-2_0-no-1.cnf
+(between iterations) assumption literals = 6
+(between iterations) assumption literals = 8
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 6
+### time 0.022
+### rotation_clauses 49
+### rebuild-time 0
+### muc-size 53
+### lpf_literals 24
+### UNSAT_by_pf 0
+### iter 4
+### true_assump_ratio 0.733333
+### nettime 0.01
+### longestcall 0.002
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 936
+### conflicts 40
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-200-2_0-no-2.cnf
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 6
+(between iterations) assumption literals = 5
+### time 0.018
+### rotation_clauses 47
+### rebuild-time 0
+### muc-size 50
+### lpf_literals 15
+### UNSAT_by_pf 0
+### iter 3
+### true_assump_ratio 0.000000
+### nettime 0.007
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 701
+### conflicts 26
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-200-2_0-no-3.cnf
+(between iterations) assumption literals = 6
+### time 0.014
+### rotation_clauses 36
+### rebuild-time 0
+### muc-size 37
+### lpf_literals 6
+### UNSAT_by_pf 0
+### iter 1
+### true_assump_ratio 0.666667
+### nettime 0.003
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 396
+### conflicts 26
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-200-2_0-no-4.cnf
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 6
+(between iterations) assumption literals = 5
+### time 0.024
+### rotation_clauses 35
+### rebuild-time 0
+### muc-size 42
+### lpf_literals 37
+### UNSAT_by_pf 0
+### iter 8
+### true_assump_ratio 0.315789
+### nettime 0.013
+### longestcall 0.002
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 1423
+### conflicts 34
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-50-1_6-no-1.cnf
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 6
+### time 0.008
+### rotation_clauses 20
+### rebuild-time 0
+### muc-size 22
+### lpf_literals 10
+### UNSAT_by_pf 0
+### iter 2
+### true_assump_ratio 0.700000
+### nettime 0.003
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 124
+### conflicts 17
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-50-1_6-no-2.cnf
+(between iterations) assumption literals = 6
+(between iterations) assumption literals = 7
+(between iterations) assumption literals = 3
+(between iterations) assumption literals = 6
+rebuilding proof...
+### time 0.011
+### rotation_clauses 28
+### rebuild-time 0.002
+### muc-size 31
+### lpf_literals 22
+### UNSAT_by_pf 1
+### iter 4
+### true_assump_ratio 0.350000
+### nettime 0.005
+### longestcall 0.002
+Testing...final
+did not pass test.input: aim-50-1_6-no-3.cnf
+(between iterations) assumption literals = 5
+### time 0.008
+### rotation_clauses 30
+### rebuild-time 0
+### muc-size 31
+### lpf_literals 5
+### UNSAT_by_pf 0
+### iter 1
+### true_assump_ratio 0.900000
+### nettime 0.002
+### longestcall 0
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 168
+### conflicts 20
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-50-1_6-no-4.cnf
+(between iterations) assumption literals = 5
+### time 0.006
+### rotation_clauses 19
+### rebuild-time 0
+### muc-size 20
+### lpf_literals 5
+### UNSAT_by_pf 0
+### iter 1
+### true_assump_ratio 0.800000
+### nettime 0.002
+### longestcall 0
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 98
+### conflicts 14
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-50-2_0-no-1.cnf
+(between iterations) assumption literals = 6
+### time 0.007
+### rotation_clauses 21
+### rebuild-time 0
+### muc-size 22
+### lpf_literals 6
+### UNSAT_by_pf 0
+### iter 1
+### true_assump_ratio 0.500000
+### nettime 0.001
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 75
+### conflicts 14
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-50-2_0-no-2.cnf
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 5
+(between iterations) assumption literals = 6
+### time 0.009
+### rotation_clauses 27
+### rebuild-time 0
+### muc-size 30
+### lpf_literals 16
+### UNSAT_by_pf 0
+### iter 3
+### true_assump_ratio 0.352941
+### nettime 0.003
+### longestcall 0
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 161
+### conflicts 16
+### pf_time 0.001
+### pr_time 0
+s UNSATISFIABLE
+input: aim-50-2_0-no-3.cnf
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 4
+(between iterations) assumption literals = 3
+### time 0.011
+### rotation_clauses 25
+### rebuild-time 0
+### muc-size 28
+### lpf_literals 11
+### UNSAT_by_pf 1
+### iter 4
+### true_assump_ratio 0.181818
+### nettime 0.004
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 170
+### conflicts 33
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
+input: aim-50-2_0-no-4.cnf
+(between iterations) assumption literals = 3
+(between iterations) assumption literals = 5
+### time 0.007
+### rotation_clauses 19
+### rebuild-time 0
+### muc-size 21
+### lpf_literals 8
+### UNSAT_by_pf 0
+### iter 2
+### true_assump_ratio 0.375000
+### nettime 0.002
+### longestcall 0.001
+Testing...final
+passed test...
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+test for sat now
+Core is minimal!
+### decisions 109
+### conflicts 16
+### pf_time 0
+### pr_time 0
+s UNSATISFIABLE
