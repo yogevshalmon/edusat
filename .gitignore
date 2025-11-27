@@ -1,0 +1,9 @@
+# IDE config (both correct and common-typo)
+.vscode/
+.vsocde/
+
+# Compiled object files
+*.o
+
+# Assignment file
+assignment.txt
