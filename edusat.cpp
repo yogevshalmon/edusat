@@ -339,9 +339,9 @@ SolverState Solver::BCP() {
 	if (verbose_now()) cout << "BCP" << endl;
 	if (verbose_now()) cout << "qhead = " << qhead << " trail-size = " << trail.size() << endl;
 	while (qhead < trail.size()) { 
-		Lit NegatedLit = negate(trail[qhead++]);
+		Lit NegatedLit = lit_negate(trail[qhead++]);
 		Assert(lit_state(NegatedLit) == LitState::L_UNSAT);
-		if (verbose_now()) cout << "propagating " << l2rl(negate(NegatedLit)) << endl;
+		if (verbose_now()) cout << "propagating " << l2rl(lit_negate(NegatedLit)) << endl;
 		vector<int> new_watch_list; // The original watch list minus those clauses that changed a watch. The order is maintained. 
 		int new_watch_list_idx = watches[NegatedLit].size() - 1; // Since we are traversing the watch_list backwards, this index goes down.
 		new_watch_list.resize(watches[NegatedLit].size());
@@ -457,7 +457,7 @@ int Solver::analyze(const Clause conflicting) {
 	}	while (resolve_num > 0);
 	for (clause_it it = new_clause.cl().begin(); it != new_clause.cl().end(); ++it) 
 		marked[l2v(*it)] = false;
-	Lit Negated_u = negate(u);
+	Lit Negated_u = lit_negate(u);
 	new_clause.cl().push_back(Negated_u);		
 	if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) 
 		m_var_inc *= 1 / var_decay; // increasing importance of participating variables.

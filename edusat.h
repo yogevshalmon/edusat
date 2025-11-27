@@ -140,7 +140,7 @@ Var l2v(Lit l) {
 	return (l+1) / 2;	
 } 
 
-Lit negate(Lit l) {
+Lit lit_negate(Lit l) {
 	if (Neg(l)) return l + 1;  // odd
 	return l - 1;		
 }
