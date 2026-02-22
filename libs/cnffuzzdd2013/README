@@ -1,0 +1,15 @@
+This is the 2013 edition of:
+
+cnfdd.c - delta debugger for CNFs in DIMACS format
+cnfuzz.c - fuzzer for CNFs in DIMACS format
+
+They both should be 64-bit clean, support QDIMACS, and option
+fuzzing respectively delta debugging (see also our TAP'13 paper).
+
+There was no change to:
+
+mtcnfdd.c - multithreaded version (needs -pthread to compile)
+
+See our SAT'2010 papers for more details and COPYING for the license.
+
+Armin Biere, Juli 2013.

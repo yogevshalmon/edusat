@@ -15,3 +15,6 @@ edusat.exe
 edusat.out
 edusat
 edusat_baseline
+
+# libs exe files
+libs/cnffuzzdd2013/cnfuzz
