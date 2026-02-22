@@ -105,11 +105,15 @@ void Solver::read_cnf(ifstream& in) {
 /******************  Solving ******************************/
 #pragma region solving
 void Solver::reset() { // invoked initially + every restart
+	separators.clear();
+	conflicts_at_dl.clear();
+	decision_lits.clear();
 	dl = 0;
 	max_dl = 0;
 	conflicting_clause_idx = -1;	
 	separators.push_back(0); // we want separators[1] to match dl=1. separators[0] is not used.
 	conflicts_at_dl.push_back(0);
+	decision_lits.push_back(0); // index 0 unused
 }
 
 
@@ -140,13 +144,49 @@ void Solver::initialize() {
 	reset();
 }
 
-inline void Solver::assert_lit(Lit l) {
+inline void Solver::assert_lit(Lit l, int forced_level) {
 	trail.push_back(l);
 	int var = l2v(l);
+	int level = forced_level >= 0 ? forced_level : dl;
 	if (Neg(l)) prev_state[var] = state[var] = VarState::V_FALSE; else prev_state[var] = state[var] = VarState::V_TRUE;
-	dlevel[var] = dl;
+	dlevel[var] = level;
 	++num_assignments;
-	if (verbose_now()) cout << l2rl(l) <<  " @ " << dl << endl;
+	if (verbose_now()) cout << l2rl(l) <<  " @ " << level << endl;
+}
+
+// TODO: i dont think we need this if we dont re-compute the trail, if we only backtrack to the blvl maybe we can just update the separators etc...
+void Solver::recompute_separators() {
+	separators.clear();
+	conflicts_at_dl.clear();
+	separators.push_back(0);
+	conflicts_at_dl.push_back(0);
+	size_t search_from = 0;
+	for (int level = 1; level <= dl; ++level) {
+		Lit d_lit = (static_cast<int>(decision_lits.size()) > level) ? decision_lits[level] : 0;
+		size_t pos = trail.size();
+		for (size_t i = search_from; i < trail.size(); ++i) {
+			if (trail[i] == d_lit) { pos = i; break; }
+		}
+		separators.push_back(static_cast<int>(pos));
+		conflicts_at_dl.push_back(num_learned);
+		search_from = pos < trail.size() ? pos + 1 : trail.size();
+	}
+
+	if (static_cast<int>(separators.size()) <= dl + 1) separators.resize(dl + 2, static_cast<int>(trail.size()));
+	else separators[dl + 1] = static_cast<int>(trail.size());
+
+	if(verbose_now()) {
+		cout << "dl = " << dl << " " << endl;
+		cout << "trail size = " << trail.size() << endl;
+		cout << "Recomputed separators: ";
+		for (size_t i = 0; i < separators.size(); ++i)
+			cout << separators[i] << " ";
+		cout << endl;
+		cout << "decision lits: ";
+		for (size_t i = 0; i < decision_lits.size(); ++i)
+			cout << l2rl(decision_lits[i]) << " ";
+		cout << endl;
+	}
 }
 
 void Solver::m_rescaleScores(double& new_score) {
@@ -198,6 +238,11 @@ void Solver::bumpLitScore(int lit_idx) {
 
 void Solver::add_clause(Clause& c, int l, int r) {	
 	Assert(c.size() > 1) ;
+	// the watches should be different. 
+	Assert(l != r);
+	Assert(c.lit(l) != c.lit(r));
+	Assert(c.lit(l) > 0 && c.lit(l) <= nlits);
+	Assert(c.lit(r) > 0 && c.lit(r) <= nlits);
 	c.lw_set(l);
 	c.rw_set(r);
 	int loc = static_cast<int>(cnf.size());  // the first is in location 0 in cnf	
@@ -275,17 +320,19 @@ SolverState Solver::decide(){
 
 Apply_decision:	
 	dl++; // increase decision level
-	if (dl > max_dl) {
-		max_dl = dl;
-		separators.push_back(trail.size());
-		conflicts_at_dl.push_back(num_learned);
+	if (dl > max_dl) max_dl = dl;
+	// Ensure separators/conflicts_at_dl are large enough (CB backtracking may have shrunk them)
+	if (static_cast<int>(separators.size()) <= dl) {
+		separators.resize(dl + 1, static_cast<int>(trail.size()));
+		conflicts_at_dl.resize(dl + 1, num_learned);
 	}
-	else {
-		separators[dl] = trail.size();
-		conflicts_at_dl[dl] = num_learned;
-	}
+	separators[dl] = trail.size();
+	conflicts_at_dl[dl] = num_learned;
 	
 	assert_lit(best_lit);
+	// NOTE: decision lits track code for when we recompute the trail after backtracking with CB. 
+	if (static_cast<int>(decision_lits.size()) <= dl) decision_lits.resize(dl + 1, 0);
+	decision_lits[dl] = best_lit;
 	++num_decisions;	
 	return SolverState::UNDEF;
 }
@@ -299,7 +346,7 @@ inline ClauseState Clause::next_not_false(bool is_left_watch, Lit other_watch, b
 			if (LitState != LitState::L_UNSAT && *it != other_watch) { // found another watch_lit
 				loc = distance(c.begin(), it);
 				if (is_left_watch) lw = loc;    // if literal was the left one 
-				else rw = loc;				
+				else rw = loc;
 				return ClauseState::C_UNDEF;
 			}
 		}
@@ -341,6 +388,13 @@ SolverState Solver::BCP() {
 	while (qhead < trail.size()) { 
 		Lit NegatedLit = lit_negate(trail[qhead++]);
 		Assert(lit_state(NegatedLit) == LitState::L_UNSAT);
+		// NOTE: for now it seems we dont need it?
+		// NOTE: because of backtracking with CB, some literals in the trail may already be unassigned. We can skip them in BCP, but we need to be careful to maintain the watch lists correctly.
+		// skip already unassigned literals. Note that we cannot break here because there may be more literals in the trail that are still assigned and need to be propagated.
+		// if (lit_state(NegatedLit) == LitState::L_UNASSIGNED) {
+		// 	// if (verbose_now()) cout << "skipping unassigned literal " << l2rl(NegatedLit) << " at qhead " << qhead - 1 << endl;
+		// 	continue;
+		// }
 		if (verbose_now()) cout << "propagating " << l2rl(lit_negate(NegatedLit)) << endl;
 		vector<int> new_watch_list; // The original watch list minus those clauses that changed a watch. The order is maintained. 
 		int new_watch_list_idx = watches[NegatedLit].size() - 1; // Since we are traversing the watch_list backwards, this index goes down.
@@ -373,7 +427,16 @@ SolverState Solver::BCP() {
 				break; // nothing to do when clause has a satisfied literal.
 			case ClauseState::C_UNIT: { // new implication				
 				if (verbose_now()) cout << "propagating: ";
-				assert_lit(other_watch);
+				int implied_level = dl;
+				if (enable_cb) {
+					int max_level = 0;
+					for (clause_it lit_it = c.cl().begin(); lit_it != c.cl().end(); ++lit_it) {
+						if (*lit_it == other_watch) continue;
+						max_level = max(max_level, dlevel[l2v(*lit_it)]);
+					}
+					implied_level = max_level;
+				}
+				assert_lit(other_watch, implied_level);
 				antecedent[l2v(other_watch)] = *it;
 				if (verbose_now()) cout << "new implication <- " << l2rl(other_watch) << endl;
 				break;
@@ -446,17 +509,24 @@ int Solver::analyze(const Clause conflicting) {
 			u = *t_it;
 			v = l2v(u);
 			++t_it;
-			if (marked[v]) break;
+			// NOTE: are we sure that is always true? maybe the check is not good!
+			Assert(dlevel[v] <= dl);
+			// With CB, the trail has interleaved decision levels.
+			// Only stop on marked variables at the current decision level. we want to enter the rest of the marked variables to the conflict clause!
+			if (marked[v] && dlevel[v] == dl) break;
 		}
 		marked[v] = false;
 		--resolve_num;
 		if(!resolve_num) continue; 
-		int ant = antecedent[v];		
+		int ant = antecedent[v];
+		Assert(ant >= 0 && ant < static_cast<int>(cnf.size()));
 		current_clause = cnf[ant]; 
 		current_clause.cl().erase(find(current_clause.cl().begin(), current_clause.cl().end(), u));	
 	}	while (resolve_num > 0);
+
 	for (clause_it it = new_clause.cl().begin(); it != new_clause.cl().end(); ++it) 
 		marked[l2v(*it)] = false;
+
 	Lit Negated_u = lit_negate(u);
 	new_clause.cl().push_back(Negated_u);		
 	if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) 
@@ -464,6 +534,10 @@ int Solver::analyze(const Clause conflicting) {
 	
 	++num_learned;
 	asserted_lit = Negated_u;
+	if (verbose_now())
+	{
+		cout << "Current uip: " << l2rl(u) << endl;
+	}
 	if (new_clause.size() == 1) { // unary clause	
 		add_unary_clause(Negated_u);
 	}
@@ -477,7 +551,7 @@ int Solver::analyze(const Clause conflicting) {
 		new_clause.print_real_lits(); 
 		cout << endl;
 		cout << " learnt clauses:  " << num_learned;				
-		cout << " Backtracking to level " << bktrk << endl;
+		cout << " Backtrack level " << bktrk << endl;
 	}
 
 	if (verbose >= 1 && !(num_learned % 1000)) {
@@ -486,31 +560,111 @@ int Solver::analyze(const Clause conflicting) {
 	return bktrk; 
 }
 
-void Solver::backtrack(int k) {
-	if (verbose_now()) cout << "backtrack" << endl;
-	// local restart means that we restart if the number of conflicts learned in this 
-	// decision level has passed the threshold. 
-	if (k > 0 && (num_learned - conflicts_at_dl[k] > restart_threshold)) {	// "local restart"	
-		restart(); 		
+void Solver::backtrack_ncb(int k) {
+	if (verbose_now()) cout << "backtrack (NCB)" << endl;
+	// Ensure arrays are large enough
+	if (static_cast<int>(separators.size()) <= k + 1) separators.resize(k + 2, static_cast<int>(trail.size()));
+	if (static_cast<int>(conflicts_at_dl.size()) <= k) conflicts_at_dl.resize(k + 1, num_learned);
+	
+	if (k > 0 && (num_learned - conflicts_at_dl[k] > restart_threshold)) { // local restart
+		restart();
 		return;
 	}
-	static int counter = 0;
-		
-	for (trail_t::iterator it = trail.begin() + separators[k+1]; it != trail.end(); ++it) { // erasing from k+1
+
+	for (trail_t::iterator it = trail.begin() + separators[k + 1]; it != trail.end(); ++it) {
 		Var v = l2v(*it);
-		if (dlevel[v]) { // we need the condition because of learnt unary clauses. In that case we enforce an assignment with dlevel = 0.
+		if (dlevel[v]) {
 			state[v] = VarState::V_UNASSIGNED;
 			if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_curr_activity = max(m_curr_activity, m_activity[v]);
 		}
 	}
 	if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_should_reset_iterators = true;
 	if (verbose_now()) print_state();
-	trail.erase(trail.begin() + separators[k+1], trail.end());
+	trail.erase(trail.begin() + separators[k + 1], trail.end());
 	qhead = trail.size();
-	dl = k;	
+	dl = k;
+	if (static_cast<int>(decision_lits.size()) > dl) decision_lits.resize(dl + 1);
 	assert_lit(asserted_lit);
+	Assert(antecedent.size() > l2v(asserted_lit));
+	Assert(cnf.size() > 0);
 	antecedent[l2v(asserted_lit)] = cnf.size() - 1;
 	conflicting_clause_idx = -1;
+	// Ensure separators is large enough before setting separators[dl + 1]
+	if (static_cast<int>(separators.size()) <= dl + 1) separators.resize(dl + 2, static_cast<int>(trail.size()));
+	separators[dl + 1] = trail.size();
+}
+
+void Solver::backtrack_cb(int k, int conflict_cls_blevel) {
+	if (verbose_now()) cout << "backtrack (CB)" << endl;
+	if (k > 0 && static_cast<int>(conflicts_at_dl.size()) > k && (num_learned - conflicts_at_dl[k] > restart_threshold)) {
+		restart();
+		return;
+	}
+	deque<Lit> keep;
+	for (trail_t::reverse_iterator it = trail.rbegin(); it != trail.rend(); ++it) {
+		Var v = l2v(*it);
+		if (dlevel[v] <= k) {
+			keep.push_front(*it);
+		} else {
+			// only unassign variables that are not unit (dlevel 0)
+			if (dlevel[v] != 0) {
+				state[v] = VarState::V_UNASSIGNED;
+				if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_curr_activity = max(m_curr_activity, m_activity[v]);
+			}
+		}
+	}
+	trail.clear();
+	for (Lit l : keep) trail.push_back(l);
+	// qhead = trail.size();
+	qhead = 0;
+	dl = k;
+	if (static_cast<int>(decision_lits.size()) > dl) decision_lits.resize(dl + 1);
+	if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_should_reset_iterators = true;
+	// NOTE!: the decision level here of the lit should not be k (i think!)
+	if (verbose_now()) {
+		cout << "After backtrack to level " << k << ", trail is: ";
+		for (Lit l : trail) cout << l2rl(l) << "@" << dlevel[l2v(l)] << "|" <<antecedent[l2v(l)] <<" " ;
+		cout << endl;
+	}
+	assert_lit(asserted_lit, conflict_cls_blevel);
+	Assert(antecedent.size() > l2v(asserted_lit));
+	Assert(cnf.size() > 0);
+	antecedent[l2v(asserted_lit)] = cnf.size() - 1;
+	conflicting_clause_idx = -1;
+	recompute_separators();
+}
+
+void Solver::backtrack_cb_preserve(int k) {
+	if (verbose_now()) cout << "backtrack (CB pre-analyze)" << endl;
+	deque<Lit> keep;
+	for (trail_t::reverse_iterator it = trail.rbegin(); it != trail.rend(); ++it) {
+		Var v = l2v(*it);
+		if (dlevel[v] <= k) {
+			keep.push_front(*it);
+		} else {
+			// only unassign variables that are not unit (dlevel 0)
+			if (dlevel[v] != 0) {
+				state[v] = VarState::V_UNASSIGNED;
+				// antecedent[v] = -1; // we also need to reset the antecedent because we will re-analyze the same conflict clause and we want to make sure that we do not get confused by old antecedents.
+				if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_curr_activity = max(m_curr_activity, m_activity[v]);
+			}
+		}
+	}
+	trail.clear();
+	for (Lit l : keep) trail.push_back(l);
+	// qhead = trail.size();
+	qhead = 0;
+	dl = k;
+	if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_should_reset_iterators = true;
+	if (static_cast<int>(decision_lits.size()) > dl) decision_lits.resize(dl + 1);
+	// print the trail and dl 
+	if (verbose_now())
+	{
+		cout << "After backtrack to level " << k << ", trail is: ";
+		for (Lit l : trail) cout << l2rl(l) << "@" << dlevel[l2v(l)] << "|" <<antecedent[l2v(l)] <<" " ;
+		cout << endl;
+	}
+	recompute_separators();
 }
 
 void Solver::validate_assignment() {
@@ -523,10 +677,10 @@ void Solver::validate_assignment() {
 			if (lit_state(*it_c) == LitState::L_SAT) found = 1;
 		if (!found) {
 			cout << "fail on clause: "; 
-			it->print();
+			it->print_real_lits();
 			cout << endl;
 			for (clause_it it_c = it->cl().begin(); it_c != it->cl().end() && !found; ++it_c)
-				cout << *it_c << " (" << (int) lit_state(*it_c) << ") ";
+				cout << l2rl(*it_c) << " (" << (int) lit_state(*it_c) << ") ";
 			cout << endl;
 			Abort("Assignment validation failed", 3);
 		}
@@ -594,8 +748,68 @@ SolverState Solver::_solve() {
 		while (true) {
 			res = BCP();
 			if (res == SolverState::UNSAT) return res;
-			if (res == SolverState::CONFLICT)
-				backtrack(analyze(cnf[conflicting_clause_idx]));
+			if (res == SolverState::CONFLICT) {
+				if (enable_cb) {
+					Clause& cc = cnf[conflicting_clause_idx];
+					int max_level = 0, second_level = 0, max_count = 0;
+					Lit max_level_lit = 0;
+					for (clause_it it = cc.cl().begin(); it != cc.cl().end(); ++it) {
+						int lv = dlevel[l2v(*it)];
+						if (verbose_now()) cout << "literal " << l2rl(*it) << " at level " << lv << endl;
+						if (lv > max_level) {
+							second_level = max_level;
+							max_level = lv;
+							max_count = 1;
+							max_level_lit = *it;
+						} else if (lv == max_level) {
+							max_count++;
+						} else if (lv > second_level) {
+							second_level = lv;
+						}
+					}
+					if (max_count == 1 && max_level > second_level) {
+						// Backtrack to second_level, the clause becomes unit
+						int clause_idx = conflicting_clause_idx;
+						int bt_level = max(second_level, 0);
+						backtrack_cb_preserve(bt_level);
+						// Fix 1: After backtracking, max_level_lit is now unassigned.
+						// Ensure max_level_lit is one of the two watch literals in the clause,
+						// because both existing watches may be falsified at levels <= bt_level,
+						// violating the watch invariant (Moehle & Biere SAT'19, Bug 1).
+						{
+							Clause& unit_cls = cnf[clause_idx];
+							Lit lw_lit = unit_cls.get_lw_lit();
+							Lit rw_lit = unit_cls.get_rw_lit();
+							if (max_level_lit != lw_lit && max_level_lit != rw_lit) {
+								// Find the index of max_level_lit inside the clause
+								int ml_idx = -1;
+								for (int i = 0; i < (int)unit_cls.size(); ++i) {
+									if (unit_cls.lit(i) == max_level_lit) { ml_idx = i; break; }
+								}
+								Assert(ml_idx >= 0);
+								// Replace the left watch with max_level_lit
+								vector<int>& wl = watches[lw_lit];
+								wl.erase(std::remove(wl.begin(), wl.end(), clause_idx), wl.end());
+								unit_cls.lw_set(ml_idx);
+								watches[max_level_lit].push_back(clause_idx);
+							}
+						}
+						// Assert the implied literal so BCP can propagate it
+						assert_lit(max_level_lit, bt_level);
+						antecedent[l2v(max_level_lit)] = clause_idx;
+						conflicting_clause_idx = -1;
+						continue; // continue with BCP
+					} else if (max_count > 1) {
+						// Multiple literals at max_level, backtrack to max_level for analysis
+						backtrack_cb_preserve(max_level);
+					}
+					// If max_level == second_level or other cases, continue with normal analysis
+				}
+				int blevel = analyze(cnf[conflicting_clause_idx]);
+				int target = enable_cb ? max(0, dl - 1) : blevel;
+				// NOTE: the blevel > 0 is for fixing bug when we dont NCB on new learnt lits in global level 0, seems to fix the issue, should look more into it. 
+				if (enable_cb && blevel > 0) backtrack_cb(target, blevel); else backtrack_ncb(blevel);
+			}
 			else break;
 		}
 		res = decide();

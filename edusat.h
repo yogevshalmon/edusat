@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iterator>
 #include <vector>
+#include <deque>
 #include <unordered_set>
 #include <unordered_map>
 #include <map>
@@ -36,6 +37,7 @@ typedef vector<Lit> trail_t;
 int verbose = 0;
 double begin_time;
 double timeout = 0.0;
+int enable_cb = 0; // 0 = traditional NCB, 1 = chronological backtracking
 
 
 void Abort(string s, int i);
@@ -60,7 +62,8 @@ VAL_DEC_HEURISTIC ValDecHeuristic = VAL_DEC_HEURISTIC::PHASESAVING;
 unordered_map<string, option*> options = {
 	{"v",           new intoption(&verbose, 0, 2, "Verbosity level")},
 	{"timeout",     new doubleoption(&timeout, 0.0, 36000.0, "Timeout in seconds")},
-	{"valdh",       new intoption((int*)&ValDecHeuristic, 0, 1, "{0: phase-saving, 1: literal-score}")}
+	{"valdh",       new intoption((int*)&ValDecHeuristic, 0, 1, "{0: phase-saving, 1: literal-score}")},
+	{"cb",          new intoption(&enable_cb, 0, 1, "Enable chronological backtracking (0/1)")}
 };
 
 
@@ -201,6 +204,7 @@ class Solver {
 	vector<bool> marked;	// var => seen during analyze()
 	vector<int> dlevel; // var => decision level in which this variable was assigned its value. 
 	vector<int> conflicts_at_dl; // decision level => # of conflicts under it. Used for local restarts. 
+	vector<Lit> decision_lits; // decision literal per decision level (index == level, index 0 unused)
 
 	// Used by VAR_DH_MINISAT:	
 	map<double, unordered_set<Var>, greater<double>> m_Score2Vars; // 'greater' forces an order from large to small of the keys
@@ -255,9 +259,12 @@ class Solver {
 	inline int  getVal(Var v);
 	inline void add_clause(Clause& c, int l, int r);
 	inline void add_unary_clause(Lit l);
-	inline void assert_lit(Lit l);	
+	inline void assert_lit(Lit l, int forced_level = -1);	
 	void m_rescaleScores(double& new_score);
-	inline void backtrack(int k);
+	inline void backtrack_ncb(int k);
+	inline void backtrack_cb(int k, int conflict_cls_blevel);
+	void backtrack_cb_preserve(int k);
+	void recompute_separators();
 	void restart();
 	
 	// scores	
