@@ -33,6 +33,8 @@ echo "Working dir: $(pwd)"
 echo "Solver: $SOLVER_ABS"
 echo "Extra args: ${EXTRA_ARGS[*]:-(none)}"
 
+GLOBAL_FAIL=0
+
 run_suite() {
   local cb_flag=$1
   echo "=== Running suite with cb=$cb_flag ==="
@@ -81,6 +83,9 @@ run_suite() {
   done
 
   echo "cb=$cb_flag : SAT $sat_ok/$sat_total | UNSAT $unsat_ok/$unsat_total"
+  if [[ $sat_ok -ne $sat_total || $unsat_ok -ne $unsat_total ]]; then
+    GLOBAL_FAIL=1
+  fi
   echo ""
 }
 
@@ -88,3 +93,7 @@ echo "Starting tests..."
 run_suite 0
 run_suite 1
 echo "Done."
+if [[ $GLOBAL_FAIL -ne 0 ]]; then
+  echo "ERROR: Some tests failed." >&2
+  exit 1
+fi
