@@ -174,6 +174,9 @@ void Solver::recompute_separators() {
 
 	if (static_cast<int>(separators.size()) <= dl + 1) separators.resize(dl + 2, static_cast<int>(trail.size()));
 	else separators[dl + 1] = static_cast<int>(trail.size());
+	// Keep conflicts_at_dl the same length as separators so decide() never writes past its end.
+	if (static_cast<int>(conflicts_at_dl.size()) < static_cast<int>(separators.size()))
+		conflicts_at_dl.resize(separators.size(), num_learned);
 
 	if(verbose_now()) {
 		cout << "dl = " << dl << " " << endl;
@@ -321,11 +324,13 @@ SolverState Solver::decide(){
 Apply_decision:	
 	dl++; // increase decision level
 	if (dl > max_dl) max_dl = dl;
-	// Ensure separators/conflicts_at_dl are large enough (CB backtracking may have shrunk them)
-	if (static_cast<int>(separators.size()) <= dl) {
+	// Ensure separators/conflicts_at_dl are large enough (CB backtracking may have shrunk them).
+	// Check each vector independently: recompute_separators() sizes separators to dl+2 but
+	// only fills conflicts_at_dl up to dl+1, so they can be out of sync.
+	if (static_cast<int>(separators.size()) <= dl)
 		separators.resize(dl + 1, static_cast<int>(trail.size()));
+	if (static_cast<int>(conflicts_at_dl.size()) <= dl)
 		conflicts_at_dl.resize(dl + 1, num_learned);
-	}
 	separators[dl] = trail.size();
 	conflicts_at_dl[dl] = num_learned;
 	
@@ -728,14 +733,14 @@ void Solver::solve() {
 		string str = "solution in ",
 			str1 = Assignment_file;
 		cout << str + str1 << endl;
-		cout << "SAT" << endl;
+		cout << "S SAT" << endl;
 		break;
 	}
 	case SolverState::UNSAT: 
-		cout << "UNSAT" << endl;
+		cout << "S UNSAT" << endl;
 		break;
 	case SolverState::TIMEOUT: 
-		cout << "TIMEOUT" << endl;
+		cout << "S TIMEOUT" << endl;
 		return;
 	}	
 	return;
