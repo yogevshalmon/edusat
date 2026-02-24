@@ -41,7 +41,7 @@ def run_once(args, iteration=None):
             solver_cmd.extend(args.solver_args.split())
         solver_cmd.append(cnf_path)
         print(f"Running solver: {' '.join(solver_cmd)}")
-        result1 = subprocess.run(solver_cmd, capture_output=True, text=True)
+        result1 = subprocess.run(solver_cmd, capture_output=True, text=True, timeout=args.timeout)
         print("Solver 1 output:")
         print(result1.stdout)
         if result1.stderr:
@@ -54,7 +54,7 @@ def run_once(args, iteration=None):
         if args.solver2:
             solver2_cmd = [args.solver2, cnf_path]
             print(f"Running solver 2: {' '.join(solver2_cmd)}")
-            result2 = subprocess.run(solver2_cmd, capture_output=True, text=True)
+            result2 = subprocess.run(solver2_cmd, capture_output=True, text=True, timeout=args.timeout)
             print("Solver 2 output:")
             print(result2.stdout)
             if result2.stderr:
@@ -91,6 +91,7 @@ def main():
     parser.add_argument("--fuzzer", default="libs/cnffuzzdd2013/cnfuzz", help="Path to the cnfuzz executable")
     parser.add_argument("--fuzz-args", default="", help="Arguments to pass to the fuzzer")
     parser.add_argument("--max", type=int, default=1, help="Maximum number of fuzz/solve iterations (default: 1)")
+    parser.add_argument("--timeout", type=float, default=30, help="Timeout in seconds for each solver run (default: 30)")
     args = parser.parse_args()
 
     for i in range(args.max):
