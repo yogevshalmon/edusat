@@ -264,7 +264,6 @@ class Solver {
 	inline void backtrack_ncb(int k);
 	inline void backtrack_cb(int k, int conflict_cls_blevel);
 	void backtrack_cb_preserve(int k);
-	void recompute_separators();
 	void restart();
 	
 	// scores	

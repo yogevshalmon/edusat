@@ -154,43 +154,6 @@ inline void Solver::assert_lit(Lit l, int forced_level) {
 	if (verbose_now()) cout << l2rl(l) <<  " @ " << level << endl;
 }
 
-// TODO: i dont think we need this if we dont re-compute the trail, if we only backtrack to the blvl maybe we can just update the separators etc...
-void Solver::recompute_separators() {
-	separators.clear();
-	conflicts_at_dl.clear();
-	separators.push_back(0);
-	conflicts_at_dl.push_back(0);
-	size_t search_from = 0;
-	for (int level = 1; level <= dl; ++level) {
-		Lit d_lit = (static_cast<int>(decision_lits.size()) > level) ? decision_lits[level] : 0;
-		size_t pos = trail.size();
-		for (size_t i = search_from; i < trail.size(); ++i) {
-			if (trail[i] == d_lit) { pos = i; break; }
-		}
-		separators.push_back(static_cast<int>(pos));
-		conflicts_at_dl.push_back(num_learned);
-		search_from = pos < trail.size() ? pos + 1 : trail.size();
-	}
-
-	if (static_cast<int>(separators.size()) <= dl + 1) separators.resize(dl + 2, static_cast<int>(trail.size()));
-	else separators[dl + 1] = static_cast<int>(trail.size());
-	// Keep conflicts_at_dl the same length as separators so decide() never writes past its end.
-	if (static_cast<int>(conflicts_at_dl.size()) < static_cast<int>(separators.size()))
-		conflicts_at_dl.resize(separators.size(), num_learned);
-
-	if(verbose_now()) {
-		cout << "dl = " << dl << " " << endl;
-		cout << "trail size = " << trail.size() << endl;
-		cout << "Recomputed separators: ";
-		for (size_t i = 0; i < separators.size(); ++i)
-			cout << separators[i] << " ";
-		cout << endl;
-		cout << "decision lits: ";
-		for (size_t i = 0; i < decision_lits.size(); ++i)
-			cout << l2rl(decision_lits[i]) << " ";
-		cout << endl;
-	}
-}
 
 void Solver::m_rescaleScores(double& new_score) {
 	if (verbose_now()) cout << "Rescale" << endl;
@@ -390,7 +353,7 @@ void Solver::test() { // tests that each clause is watched twice.
 SolverState Solver::BCP() {
 	if (verbose_now()) cout << "BCP" << endl;
 	if (verbose_now()) cout << "qhead = " << qhead << " trail-size = " << trail.size() << endl;
-	while (qhead < trail.size()) { 
+	while (qhead < trail.size()) {
 		Lit NegatedLit = lit_negate(trail[qhead++]);
 		Assert(lit_state(NegatedLit) == LitState::L_UNSAT);
 		// NOTE: for now it seems we dont need it?
@@ -605,71 +568,93 @@ void Solver::backtrack_cb(int k, int conflict_cls_blevel) {
 		restart();
 		return;
 	}
-	deque<Lit> keep;
-	for (trail_t::reverse_iterator it = trail.rbegin(); it != trail.rend(); ++it) {
-		Var v = l2v(*it);
+
+	// separators[k+1] is the start of level k+1 in the trail, which is our cut point.
+	// trail[0..cut-1] is fully below level k+1 and its separators stay valid as-is.
+	// We only scan trail[cut..end] for literals to keep (out-of-order, level <= k) or unassign.
+	if (static_cast<int>(separators.size()) <= k + 1)
+		separators.resize(k + 2, static_cast<int>(trail.size()));
+	int cut = separators[k + 1];
+
+	vector<Lit> out_of_order;
+	for (int i = cut; i < static_cast<int>(trail.size()); ++i) {
+		Var v = l2v(trail[i]);
 		if (dlevel[v] <= k) {
-			keep.push_front(*it);
-		} else {
+			if (state[v] != VarState::V_UNASSIGNED)
+				out_of_order.push_back(trail[i]);
+		} else if (dlevel[v] != 0) {
 			// only unassign variables that are not unit (dlevel 0)
-			if (dlevel[v] != 0) {
-				state[v] = VarState::V_UNASSIGNED;
-				if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_curr_activity = max(m_curr_activity, m_activity[v]);
-			}
+			state[v] = VarState::V_UNASSIGNED;
+			if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_curr_activity = max(m_curr_activity, m_activity[v]);
 		}
 	}
-	trail.clear();
-	for (Lit l : keep) trail.push_back(l);
-	// qhead = trail.size();
+
+	trail.resize(cut);
+	for (Lit l : out_of_order) trail.push_back(l);
+
 	qhead = 0;
 	dl = k;
 	if (static_cast<int>(decision_lits.size()) > dl) decision_lits.resize(dl + 1);
 	if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_should_reset_iterators = true;
-	// NOTE!: the decision level here of the lit should not be k (i think!)
+
 	if (verbose_now()) {
 		cout << "After backtrack to level " << k << ", trail is: ";
-		for (Lit l : trail) cout << l2rl(l) << "@" << dlevel[l2v(l)] << "|" <<antecedent[l2v(l)] <<" " ;
+		for (Lit l : trail) cout << l2rl(l) << "@" << dlevel[l2v(l)] << "|" << antecedent[l2v(l)] << " ";
 		cout << endl;
 	}
+
+	// separators[0..k] are unchanged (that part of the trail was not touched).
+	separators.resize(k + 2);
+	if (static_cast<int>(conflicts_at_dl.size()) > k + 1) conflicts_at_dl.resize(k + 2);
+
+	// NOTE!: the decision level here of the lit should not be k (i think!)
 	assert_lit(asserted_lit, conflict_cls_blevel);
 	Assert(antecedent.size() > l2v(asserted_lit));
 	Assert(cnf.size() > 0);
 	antecedent[l2v(asserted_lit)] = cnf.size() - 1;
 	conflicting_clause_idx = -1;
-	recompute_separators();
+	separators[k + 1] = static_cast<int>(trail.size()); // sentinel: end of current trail
 }
 
 void Solver::backtrack_cb_preserve(int k) {
 	if (verbose_now()) cout << "backtrack (CB pre-analyze)" << endl;
-	deque<Lit> keep;
-	for (trail_t::reverse_iterator it = trail.rbegin(); it != trail.rend(); ++it) {
-		Var v = l2v(*it);
+
+	if (static_cast<int>(separators.size()) <= k + 1)
+		separators.resize(k + 2, static_cast<int>(trail.size()));
+	int cut = separators[k + 1];
+
+	vector<Lit> out_of_order;
+	for (int i = cut; i < static_cast<int>(trail.size()); ++i) {
+		Var v = l2v(trail[i]);
 		if (dlevel[v] <= k) {
-			keep.push_front(*it);
-		} else {
+			if (state[v] != VarState::V_UNASSIGNED)
+				out_of_order.push_back(trail[i]);
+		} else if (dlevel[v] != 0) {
 			// only unassign variables that are not unit (dlevel 0)
-			if (dlevel[v] != 0) {
-				state[v] = VarState::V_UNASSIGNED;
-				// antecedent[v] = -1; // we also need to reset the antecedent because we will re-analyze the same conflict clause and we want to make sure that we do not get confused by old antecedents.
-				if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_curr_activity = max(m_curr_activity, m_activity[v]);
-			}
+			state[v] = VarState::V_UNASSIGNED;
+			// antecedent[v] = -1; // we also need to reset the antecedent because we will re-analyze the same conflict clause and we want to make sure that we do not get confused by old antecedents.
+			if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_curr_activity = max(m_curr_activity, m_activity[v]);
 		}
 	}
-	trail.clear();
-	for (Lit l : keep) trail.push_back(l);
-	// qhead = trail.size();
+
+	trail.resize(cut);
+	for (Lit l : out_of_order) trail.push_back(l);
+
 	qhead = 0;
 	dl = k;
 	if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) m_should_reset_iterators = true;
 	if (static_cast<int>(decision_lits.size()) > dl) decision_lits.resize(dl + 1);
-	// print the trail and dl 
-	if (verbose_now())
-	{
+
+	if (verbose_now()) {
 		cout << "After backtrack to level " << k << ", trail is: ";
-		for (Lit l : trail) cout << l2rl(l) << "@" << dlevel[l2v(l)] << "|" <<antecedent[l2v(l)] <<" " ;
+		for (Lit l : trail) cout << l2rl(l) << "@" << dlevel[l2v(l)] << "|" << antecedent[l2v(l)] << " ";
 		cout << endl;
 	}
-	recompute_separators();
+
+	// separators[0..k] are unchanged (that part of the trail was not touched).
+	separators.resize(k + 2);
+	if (static_cast<int>(conflicts_at_dl.size()) > k + 1) conflicts_at_dl.resize(k + 2);
+	separators[k + 1] = static_cast<int>(trail.size()); // sentinel: end of current trail
 }
 
 void Solver::validate_assignment() {
