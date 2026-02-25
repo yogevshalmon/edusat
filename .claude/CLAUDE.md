@@ -20,9 +20,12 @@ Compiler: `g++ -Wall -O2 -std=c++11`
 
 ## Usage
 ```bash
-./edusat <cnf_file> [-v <0-2>] [-timeout <secs>] [-valdh <0|1>] [-cb <0|1>]
+./edusat <cnf_file> [-v <0-2>] [-timeout <secs>] [-valdh <0|1>] [-cb <0|1>] [-cbh <0|1|2>] [-cbt <int>]
 ```
 - `-cb 1` enables Chronological Backtracking
+- `-cbh 0` always-CB (default when `-cb 1`): backtrack to `c-1`
+- `-cbh 1` limited-CB: backtrack to `c-1` if gap `c-j > T`, else fall back to NCB (`j`); threshold set with `-cbt T` (default 100)
+- `-cbh 2` reusetrail-CB: backtrack to `δ(k)-1` where `k` = highest-VSIDS var in trail levels `(j, c]`
 - `-valdh 0` = phase-saving (default), `-valdh 1` = litscore
 - Output: prints `s SAT` or `s UNSAT`; on SAT writes `assignment.txt`
 
@@ -34,9 +37,22 @@ Compiler: `g++ -Wall -O2 -std=c++11`
 - Restart with dynamic thresholds (100–1000 conflicts)
 
 ### Backtracking Modes
-- `backtrack_ncb()` — standard: clears trail above backtrack level
-- `backtrack_cb()` — chronological: selectively removes only conflicting assignments, preserves others
-- `backtrack_cb_preserve()` — pre-analysis backtrack for CB path
+
+Variables: `c` = conflict level (`dl`), `j` = asserting level from `analyze()`, `T` = threshold
+
+| Mode | CLI | Backtrack target `b` | Notes |
+|------|-----|----------------------|-------|
+| NCB | `-cb 0` | `j` | standard 1UIP |
+| Always-CB | `-cb 1 -cbh 0` | `c - 1` | always one step back |
+| Limited-CB | `-cb 1 -cbh 1` | `c-1` if `c-j > T`, else `j` | NCB fallback for small gaps |
+| Reusetrail-CB | `-cb 1 -cbh 2` | `δ(k) - 1` | `k` = highest-VSIDS var in trail `(j,c]` |
+
+Core functions:
+- `backtrack_ncb(j)` — clears entire trail above level `j`
+- `backtrack_cb(b, j)` — preserves trail entries with `dlevel ≤ b`, removes rest
+- `backtrack_cb_preserve(k)` — pre-analysis step: backs up to level `k` for 1UIP
+- `determine_backtrack_level(j)` — selects `b` based on active `-cbh` heuristic
+- `reusetrail_backtrack_level(j)` — trail scan for reusetrail-CB target
 - `recompute_separators()` — rebuilds trail separators after CB
 
 ### Literal Encoding (internal)
@@ -53,6 +69,12 @@ vector<vector<int>> watches;  // lit → clause indices
 vector<VarState> state;       // current assignments
 vector<int>     antecedent;   // var → reason clause
 vector<int>     dlevel;       // var → decision level
+// Stats:
+int  num_conflicts;           // every conflict (incl. 1-lit-skip, ≥ num_learned)
+int  num_propagations;        // BCP queue dequeues
+int  num_cb_backtracks;       // conflicts resolved via CB path
+int  num_ncb_backtracks;      // conflicts resolved via NCB path
+long long total_backtrack_distance; // sum of (c - actual_b) per conflict
 ```
 
 ## Branch Structure
@@ -83,7 +105,9 @@ python ./scripts/run_fuzz_and_solve.py \
 - `--max` = number of fuzz iterations, `--timeout` = per-solve timeout (seconds)
 
 ## Development Notes
-- Current CB status: implemented, needs optimization and testing (commit `7d913eb`)
-- CB optimization: if conflict clause has exactly 1 lit at max level and rest strictly lower, skip 1UIP analysis and backtrack to second-highest level directly
+- CB always-CB (`-cbh 0`) is implemented and tested
+- Limited-CB (`-cbh 1`) and reusetrail-CB (`-cbh 2`) planned — see `.claude/plans/vectorized-snacking-beaver.md` for full implementation plan
+- CB optimization: if conflict clause has exactly 1 lit at max level and rest strictly lower, skip 1UIP analysis and backtrack to second-highest level directly (counts as `num_cb_backtracks`, does not increment `num_learned`)
+- `num_conflicts` ≥ `num_learned` when 1-lit-skip fires; `Avg-BT-distance` is the primary comparison metric (NCB ≈ large, always-CB ≈ 1)
 - `assignment.txt` is written on SAT — validated against all clauses before output
 - `Assert()` macro wraps assertions with file/line; `Abort()` for fatal errors
