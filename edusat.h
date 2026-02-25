@@ -13,6 +13,7 @@
 #include <fstream>
 #include <cassert>
 #include <ctime>
+#include <iomanip>
 #include "options.h"
 using namespace std;
 
@@ -37,7 +38,9 @@ typedef vector<Lit> trail_t;
 int verbose = 0;
 double begin_time;
 double timeout = 0.0;
-int enable_cb = 0; // 0 = traditional NCB, 1 = chronological backtracking
+int enable_cb = 0;    // 0 = traditional NCB, 1 = chronological backtracking
+int cb_heuristic = 0; // 0 = always-CB, 1 = limited-CB, 2 = reusetrail-CB
+int cb_threshold = 100; // threshold T for limited-CB (default 100)
 
 
 void Abort(string s, int i);
@@ -63,7 +66,9 @@ unordered_map<string, option*> options = {
 	{"v",           new intoption(&verbose, 0, 2, "Verbosity level")},
 	{"timeout",     new doubleoption(&timeout, 0.0, 36000.0, "Timeout in seconds")},
 	{"valdh",       new intoption((int*)&ValDecHeuristic, 0, 1, "{0: phase-saving, 1: literal-score}")},
-	{"cb",          new intoption(&enable_cb, 0, 1, "Enable chronological backtracking (0/1)")}
+	{"cb",          new intoption(&enable_cb, 0, 1, "Enable chronological backtracking (0/1)")},
+	{"cbh",         new intoption(&cb_heuristic, 0, 2, "{0: always-CB, 1: limited-CB, 2: reusetrail-CB}")},
+	{"cbt",         new intoption(&cb_threshold, 0, 1000000, "Threshold T for limited-CB (default 100)")}
 };
 
 
@@ -220,17 +225,23 @@ class Solver {
 		nclauses, 		// # clauses
 		nlits,			// # literals = 2*nvars				
 		qhead;			// index into trail. Used in BCP() to follow the propagation process.
-	int					
-		num_learned, 	
+	int
+		num_learned,
 		num_decisions,
 		num_assignments,
 		num_restarts,
+		num_conflicts,          // every conflict (incl. 1-lit-skip path)
+		num_propagations,       // BCP queue dequeues
+		num_cb_backtracks,      // conflicts resolved via CB
+		num_ncb_backtracks,     // conflicts resolved via NCB
 		dl,				// decision level
 		max_dl,			// max dl seen so far since the last restart
-		conflicting_clause_idx, // holds the index of the current conflicting clause in cnf[]. -1 if none.				
+		conflicting_clause_idx, // holds the index of the current conflicting clause in cnf[]. -1 if none.
 		restart_threshold,
 		restart_lower,
 		restart_upper;
+
+	long long total_backtrack_distance; // sum of (c - actual_b) per conflict
 
 	Lit 		asserted_lit;
 
@@ -264,6 +275,8 @@ class Solver {
 	inline void backtrack_ncb(int k);
 	inline void backtrack_cb(int k, int conflict_cls_blevel);
 	void backtrack_cb_preserve(int k);
+	int  determine_backtrack_level(int j); // j = asserting level; uses dl as c
+	int  reusetrail_backtrack_level(int j);
 	void restart();
 	
 	// scores	
@@ -271,10 +284,12 @@ class Solver {
 	inline void bumpLitScore(int lit_idx);
 
 public:
-	Solver(): 
-		nvars(0), nclauses(0), num_learned(0), num_decisions(0), num_assignments(0), 
-		num_restarts(0), m_var_inc(1.0), qhead(0), 
-		restart_threshold(Restart_lower), restart_lower(Restart_lower), 
+	Solver():
+		nvars(0), nclauses(0), num_learned(0), num_decisions(0), num_assignments(0),
+		num_restarts(0), num_conflicts(0), num_propagations(0),
+		num_cb_backtracks(0), num_ncb_backtracks(0),
+		m_var_inc(1.0), total_backtrack_distance(0), qhead(0),
+		restart_threshold(Restart_lower), restart_lower(Restart_lower),
 		restart_upper(Restart_upper), restart_multiplier(Restart_multiplier)	 {};
 	
 	// service functions
@@ -338,12 +353,22 @@ public:
 	};
 
 
-	void print_stats() {cout << endl << "Statistics: " << endl << "===================" << endl << 
-		"### Restarts:\t\t" << num_restarts << endl <<
-		"### Learned-clauses:\t" << num_learned << endl <<
-		"### Decisions:\t\t" << num_decisions << endl <<
-		"### Implications:\t" << num_assignments - num_decisions << endl <<
-		"### Time:\t\t" << cpuTime() - begin_time << endl;
+	void print_stats() {
+		double avg_dist = num_conflicts > 0
+			? (double)total_backtrack_distance / num_conflicts : 0.0;
+		cout << endl << "Statistics: " << endl << "===================" << endl
+			 << "### Restarts:\t\t"      << num_restarts                  << endl
+			 << "### Conflicts:\t\t"     << num_conflicts                 << endl
+			 << "### Learned-clauses:\t" << num_learned                   << endl
+			 << "### Decisions:\t\t"     << num_decisions                 << endl
+			 << "### Implications:\t"    << num_assignments - num_decisions << endl
+			 << "### Propagations:\t"    << num_propagations              << endl;
+		if (enable_cb)
+			cout << "### CB-backtracks:\t"  << num_cb_backtracks  << endl
+				 << "### NCB-backtracks:\t" << num_ncb_backtracks << endl;
+		cout << "### Avg-BT-distance:\t"
+			 << fixed << setprecision(2) << avg_dist              << endl
+			 << "### Time:\t\t"          << cpuTime() - begin_time << endl;
 	}
 	
 	void validate_assignment();

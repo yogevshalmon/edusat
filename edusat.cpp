@@ -355,6 +355,7 @@ SolverState Solver::BCP() {
 	if (verbose_now()) cout << "qhead = " << qhead << " trail-size = " << trail.size() << endl;
 	while (qhead < trail.size()) {
 		Lit NegatedLit = lit_negate(trail[qhead++]);
+		++num_propagations;
 		Assert(lit_state(NegatedLit) == LitState::L_UNSAT);
 		// NOTE: for now it seems we dont need it?
 		// NOTE: because of backtracking with CB, some literals in the trail may already be unassigned. We can skip them in BCP, but we need to be careful to maintain the watch lists correctly.
@@ -657,6 +658,34 @@ void Solver::backtrack_cb_preserve(int k) {
 	separators[k + 1] = static_cast<int>(trail.size()); // sentinel: end of current trail
 }
 
+// Returns the actual backtrack level b under the active CB heuristic.
+// j = asserting level from analyze(); uses current dl as conflict level c.
+int Solver::determine_backtrack_level(int j) {
+	int c = dl;
+	if (cb_heuristic == 0) return max(0, c - 1);                         // always-CB
+	if (cb_heuristic == 1)
+		return (c - j > cb_threshold) ? max(0, c - 1) : j;              // limited-CB
+	return reusetrail_backtrack_level(j);                                 // reusetrail-CB
+}
+
+// Among trail entries at levels in (j, c], pick the one with highest VSIDS activity
+// and return its level - 1 as the backtrack target.
+int Solver::reusetrail_backtrack_level(int j) {
+	int c = dl;
+	Var best_var = 0;
+	double best_score = -1.0;
+	for (size_t i = 0; i < trail.size(); ++i) {
+		Var v = l2v(trail[i]);
+		int lv = dlevel[v];
+		if (lv > j && lv <= c && m_activity[v] > best_score) {
+			best_score = m_activity[v];
+			best_var = v;
+		}
+	}
+	if (best_var == 0 || dlevel[best_var] <= j) return max(0, c - 1); // fallback to always-CB
+	return max(0, dlevel[best_var] - 1);
+}
+
 void Solver::validate_assignment() {
 	for (unsigned int i = 1; i <= nvars; ++i) if (state[i] == VarState::V_UNASSIGNED) {
 		cout << "Unassigned var: " + to_string(i) << endl; // This is supposed to happen only if the variable does not appear in any clause
@@ -739,6 +768,8 @@ SolverState Solver::_solve() {
 			res = BCP();
 			if (res == SolverState::UNSAT) return res;
 			if (res == SolverState::CONFLICT) {
+				++num_conflicts;
+				int original_dl = dl;
 				if (enable_cb) {
 					Clause& cc = cnf[conflicting_clause_idx];
 					int max_level = 0, second_level = 0, max_count = 0;
@@ -761,6 +792,8 @@ SolverState Solver::_solve() {
 						// Backtrack to second_level, the clause becomes unit
 						int clause_idx = conflicting_clause_idx;
 						int bt_level = max(second_level, 0);
+						++num_cb_backtracks;
+						total_backtrack_distance += (original_dl - bt_level);
 						backtrack_cb_preserve(bt_level);
 						// Fix 1: After backtracking, max_level_lit is now unassigned.
 						// Ensure max_level_lit is one of the two watch literals in the clause,
@@ -796,9 +829,34 @@ SolverState Solver::_solve() {
 					// If max_level == second_level or other cases, continue with normal analysis
 				}
 				int blevel = analyze(cnf[conflicting_clause_idx]);
-				int target = enable_cb ? max(0, dl - 1) : blevel;
-				// NOTE: the blevel > 0 is for fixing bug when we dont NCB on new learnt lits in global level 0, seems to fix the issue, should look more into it. 
-				if (enable_cb && blevel > 0) backtrack_cb(target, blevel); else backtrack_ncb(blevel);
+				// Determine actual backtrack target and which path to take
+				bool use_ncb;
+				int target;
+				// NOTE: the blevel == 0 check for NCB is for fixing bug when we dont NCB on new learnt lits in global level 0, seems to fix the issue, should look more into it.
+				if (!enable_cb || blevel == 0) {
+					// NCB mode, or blevel==0 (global unit): always NCB
+					use_ncb = true;
+					target = blevel;
+				} else if (cb_heuristic == 1 && (dl - blevel <= cb_threshold)) {
+					// limited-CB: gap is small, fall back to NCB
+					use_ncb = true;
+					target = blevel;
+				} else {
+					// CB path (always-CB / limited-CB large-gap / reusetrail-CB)
+					use_ncb = false;
+					target = determine_backtrack_level(blevel);
+				}
+				total_backtrack_distance += (original_dl - target);
+				if (use_ncb) {
+					++num_ncb_backtracks;
+					// When enable_cb, the trail may have CB-interleaved (out_of_order) entries.
+					// backtrack_ncb cuts blindly at separators[blevel+1] and can wrongly unassign
+					// variables with dlevel <= blevel that sit physically past that separator.
+					// backtrack_cb handles the interleaved trail correctly in all cases.
+					if (enable_cb) backtrack_cb(blevel, blevel);
+					else backtrack_ncb(blevel);
+				}
+				else { ++num_cb_backtracks;  backtrack_cb(target, blevel); }
 			}
 			else break;
 		}
