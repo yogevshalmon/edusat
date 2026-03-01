@@ -11,6 +11,9 @@ Reference paper: `papers/MoehleBiere-SAT19.pdf` ("Backing Backtracking", Moehle 
 - [options.h](../options.h) / [options.cpp](../options.cpp) — CLI option parsing
 - [Makefile](../Makefile) — build config
 
+## Environment
+Always use the python from the local `.venv` when running python commands
+
 ## Build
 ```bash
 make          # produces ./edusat
@@ -77,10 +80,6 @@ int  num_ncb_backtracks;      // conflicts resolved via NCB path
 long long total_backtrack_distance; // sum of (c - actual_b) per conflict
 ```
 
-## Branch Structure
-- `cb` (current) — CB implementation, fuzzing harness
-- `master` — stable NCB baseline
-
 ## Verification / Testing
 
 ### Quick Validation (AIM benchmark suite, ~seconds)
@@ -106,7 +105,7 @@ python ./scripts/run_fuzz_and_solve.py \
 
 ## Development Notes
 - CB always-CB (`-cbh 0`) is implemented and tested
-- Limited-CB (`-cbh 1`) and reusetrail-CB (`-cbh 2`) planned — see `.claude/plans/vectorized-snacking-beaver.md` for full implementation plan
+- Limited-CB (`-cbh 1`) and reusetrail-CB (`-cbh 2`) 
 - CB optimization: if conflict clause has exactly 1 lit at max level and rest strictly lower, skip 1UIP analysis and backtrack to second-highest level directly (counts as `num_cb_backtracks`, does not increment `num_learned`)
 - `num_conflicts` ≥ `num_learned` when 1-lit-skip fires; `Avg-BT-distance` is the primary comparison metric (NCB ≈ large, always-CB ≈ 1)
 - `assignment.txt` is written on SAT — validated against all clauses before output
