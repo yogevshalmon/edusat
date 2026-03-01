@@ -19,3 +19,6 @@ edusat_asan
 
 # libs exe files
 libs/cnffuzzdd2013/cnfuzz
+
+# results/experiment files
+results/
